@@ -1,5 +1,5 @@
 import os
-import ipaddress
+import socket
 from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import FTPHandler
 from pyftpdlib.servers import FTPServer
@@ -26,8 +26,6 @@ password = input("输入密码：")
 
 authorizer.add_user(admin, password, "./", perm="elradfmwMT")
 
-# authorizer.add_anonymous("./")
-
 handler = FTPHandler
 
 handler.authorizer = authorizer
@@ -35,15 +33,6 @@ handler.authorizer = authorizer
 handler.passive_ports = range(2000,3000)
 
 handler.banner = "OK!" 
-
-# ip = input("请输入本机ip：")
-
-# while True:
-#     try:
-#         ip_add = ipaddress.ip_address(ip)
-#         break
-#     except ValueError:
-#         ip = input("输入的IP格式有误，请重新输入：")
 
 def port_input(default):
     prompt = "请输入控制端口(默认为21)：".format(default)
@@ -63,7 +52,18 @@ def port_input(default):
 
 control = port_input(21)
 
-print("运行成功，开始启动")
+def natwork():
+    interfaces = socket.getaddrinfo(socket.gethostname(), None)
+    return interfaces
+
+Local_address = natwork()
+
+print("运行成功，开始启动,\n服务将在以下地址运行\n")
+
+for i in Local_address:
+    if ':' not in i[4][0]:
+        print(i[4][0] + ":" + str(control))
+print()
 
 server = FTPServer(("0.0.0.0", control), handler)
 
